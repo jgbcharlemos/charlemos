@@ -1,7 +1,5 @@
 export const VOICES = [
-  { id: 'TX3LPaxmHKxFdv7VOQHJ', label: 'Voz masculina cálida' },
-  { id: 'pNInz6obpgDQGcFmaJgB', label: 'Voz masculina serena' },
-  { id: 'EXAVITQu4vr4xnSDxMaL', label: 'Voz femenina suave' },
+  { id: 'Hjc6Kb2NmSRgzb1QwUsQ', label: 'Rodrigo (colombiano)' },
 ];
 
 export const LEVELS = [
