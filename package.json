@@ -1,0 +1,16 @@
+{
+  "name": "charlemos",
+  "version": "1.0.0",
+  "description": "PWA de conversacion calida para acompanamiento del habla",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.2"
+  }
+}

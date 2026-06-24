@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" fill="#E8633A" rx="20"/>
+  <!-- Burbuja izquierda -->
+  <rect x="8" y="20" width="50" height="32" rx="10" fill="white"/>
+  <polygon points="18,52 8,65 30,52" fill="white"/>
+  <!-- Burbuja derecha -->
+  <rect x="42" y="48" width="50" height="32" rx="10" fill="#FFF6EE"/>
+  <polygon points="82,80 92,93 70,80" fill="#FFF6EE"/>
+</svg>
