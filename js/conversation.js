@@ -1,6 +1,5 @@
-export function createConversation(name, topic, level) {
-  const messages = [];
-  let exchanges = 0;
+export function createConversation(name, topic, level, initialMessages = []) {
+  const messages = [...initialMessages];
 
   async function request() {
     const res = await fetch('/api/chat', {
@@ -17,16 +16,13 @@ export function createConversation(name, topic, level) {
 
   return {
     async start() {
-      messages.push({ role: 'user', content: '(El usuario abrió la conversación. Salúdalo y haz tu primera pregunta.)' });
+      messages.push({ role: 'user', content: '(El usuario abrió la conversación. Salúdalo con calidez, dile que van a charlar un buen rato, y haz tu primera pregunta.)' });
       return request();
     },
     async send(userText) {
       messages.push({ role: 'user', content: userText });
-      exchanges += 1;
       return request();
     },
-    shouldWrapUp() {
-      return exchanges >= 5;
-    },
+    getMessages() { return [...messages]; },
   };
 }
