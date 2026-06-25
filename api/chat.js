@@ -15,18 +15,27 @@ const SEARCH_TOOL = {
 };
 
 async function runSearch(query) {
+  const apiKey = process.env.BRAVE_SEARCH_API_KEY;
+  if (!apiKey) return 'No encontré información actualizada sobre eso.';
   try {
-    const base = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-    const res = await fetch(`${base}/api/search`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ query }),
+    const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=3&search_lang=es&country=co`;
+    const upstream = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': apiKey,
+      },
     });
-    if (!res.ok) return 'No encontré información actualizada sobre eso.';
-    const { results } = await res.json();
-    if (!results || results.length === 0) return 'No encontré información actualizada sobre eso.';
+    if (!upstream.ok) {
+      console.error('Brave error', upstream.status, await upstream.text());
+      return 'No encontré información actualizada sobre eso.';
+    }
+    const data = await upstream.json();
+    const results = (data.web?.results || []).slice(0, 3);
+    if (results.length === 0) return 'No encontré información actualizada sobre eso.';
     return results.map(r => `${r.title}: ${r.description}`).join('\n\n');
-  } catch {
+  } catch (err) {
+    console.error('runSearch error', err);
     return 'No pude buscar esa información ahora.';
   }
 }
@@ -118,7 +127,7 @@ export default async function handler(req, res) {
           max_tokens: MAX_TOKENS.bajo,
           system,
           messages: messagesWithTool,
-          ...(hasBrave ? { tools: [SEARCH_TOOL] } : {}),
+          // Sin tools en la segunda llamada: forzamos respuesta de texto
         };
 
         const res2 = await fetch('https://api.anthropic.com/v1/messages', {

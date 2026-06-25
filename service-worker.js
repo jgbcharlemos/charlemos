@@ -1,4 +1,4 @@
-const CACHE = 'charlemos-v1.3.0';
+const CACHE = 'charlemos-v1.4.0';
 const SHELL = [
   './',
   './index.html',
@@ -15,9 +15,8 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  // skipWaiting aquí solo para esta versión de transición.
-  // A partir de v1.4.0 en adelante, el banner se encarga.
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // Sin skipWaiting: el banner de actualización pide confirmación al usuario.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
 });
 
 self.addEventListener('message', (e) => {

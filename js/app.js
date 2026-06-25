@@ -351,10 +351,21 @@ function handleUserSpeech(text) {
   const msgToSend = isUnclear ? '[NO_ENTENDÍ]' : trimmed;
   busy = true;
   micBtn.disabled = true;
-  if (!isUnclear) setStatus(`Dijiste: "${trimmed}"`);
+  if (!isUnclear) {
+    setStatus(`Dijiste: "${trimmed}"`);
+    aiText.textContent = 'Pensando…';
+  }
   conversation.send(msgToSend)
-    .then(reply => sayAI(reply))
-    .catch(() => { aiText.textContent = 'Perdón, no te escuché bien. ¿Me lo repites?'; })
+    .then(reply => sayAI(reply && reply.trim() ? reply : 'Perdón, ¿me lo repites?'))
+    .catch((err) => {
+      if (err.code === 403) {
+        localStorage.removeItem('charlemos_activated');
+        show('pin');
+        pinError.textContent = 'El acceso fue revocado. Ingresa el PIN de nuevo.';
+      } else {
+        aiText.textContent = 'Perdón, no te escuché bien. ¿Me lo repites?';
+      }
+    })
     .finally(() => {
       busy = false;
       micBtn.disabled = false;
