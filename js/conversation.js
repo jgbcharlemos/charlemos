@@ -1,10 +1,17 @@
+function getDeviceId() {
+  return localStorage.getItem('charlemos_device_id') || '';
+}
+
 export function createConversation(name, topic, level, initialMessages = []) {
   const messages = [...initialMessages];
 
   async function request() {
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-device-id': getDeviceId(),
+      },
       body: JSON.stringify({ messages, name, topic, level }),
     });
     if (!res.ok) throw new Error('No se pudo obtener respuesta');

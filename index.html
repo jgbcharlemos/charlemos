@@ -12,6 +12,18 @@
 <body>
   <main id="app">
 
+    <!-- Pantalla 0: PIN de acceso -->
+    <section class="screen screen--active" id="screen-pin">
+      <div class="pin-wrap">
+        <div class="welcome__icon">🗣️</div>
+        <h1 class="welcome__title">Charlemos</h1>
+        <p class="welcome__subtitle">Ingresa el PIN para entrar</p>
+        <input class="pin-input" id="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="PIN" autocomplete="off" />
+        <button class="btn" id="btn-pin">Entrar</button>
+        <p class="pin-error" id="pin-error"></p>
+      </div>
+    </section>
+
     <!-- Pantalla 1: Bienvenida -->
     <section class="screen screen--active" id="screen-welcome">
       <div class="welcome">

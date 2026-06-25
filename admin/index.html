@@ -33,6 +33,10 @@
     .rec { background: var(--green-l); border-radius: 10px; padding: 0.75rem; margin-top: 0.75rem; font-size: 14px; color: var(--text); }
     .rec strong { color: var(--green); }
     #empty { text-align: center; padding: 3rem; color: var(--text2); }
+    .device-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .device-card__info { font-size: 14px; color: var(--text2); }
+    .device-card__status { font-weight: 700; color: var(--green); }
+    .btn-revoke { padding: 10px 20px; background: transparent; border: 2px solid #A32D2D; color: #A32D2D; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
     @media(max-width: 500px) { .analysis-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -48,11 +52,20 @@
 
 <div id="panel">
   <h1>Reportes de Charlemos</h1>
+  <div id="device-card" class="device-card" style="display:none;">
+    <div>
+      <div class="device-card__status" id="device-status"></div>
+      <div class="device-card__info" id="device-info"></div>
+    </div>
+    <button class="btn-revoke" id="btn-revoke">Cerrar sesión del dispositivo</button>
+  </div>
   <div class="stats" id="stats"></div>
   <div id="sessions-list"></div>
 </div>
 
 <script>
+let adminPwd = '';
+
 document.getElementById('btn-login').addEventListener('click', async () => {
   const pwd = document.getElementById('pwd').value;
   if (!pwd) return;
@@ -66,13 +79,56 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     }
     if (!res.ok) throw new Error('Error del servidor');
     const data = await res.json();
+    adminPwd = pwd;
     document.getElementById('login').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     renderSessions(data.sessions || []);
+    loadDeviceStatus();
   } catch {
     document.getElementById('error').textContent = 'Error de conexión.';
     document.getElementById('btn-login').textContent = 'Entrar';
   }
+});
+
+async function loadDeviceStatus() {
+  try {
+    const res = await fetch('/api/device-status', { headers: { 'x-admin-password': adminPwd } });
+    if (!res.ok) return;
+    const data = await res.json();
+    const card = document.getElementById('device-card');
+    const statusEl = document.getElementById('device-status');
+    const infoEl = document.getElementById('device-info');
+    card.style.display = 'flex';
+    if (data.active) {
+      const date = new Date(data.registeredAt).toLocaleString('es-CO');
+      statusEl.textContent = '📱 Dispositivo activo';
+      infoEl.textContent = `Registrado el ${date}`;
+    } else {
+      statusEl.textContent = '⚪ Sin dispositivo activo';
+      infoEl.textContent = 'Ningún celular ha ingresado con el PIN.';
+      document.getElementById('btn-revoke').style.display = 'none';
+    }
+  } catch { /* ignorar */ }
+}
+
+document.getElementById('btn-revoke').addEventListener('click', async () => {
+  if (!confirm('¿Cerrar la sesión del dispositivo activo?')) return;
+  const btn = document.getElementById('btn-revoke');
+  btn.textContent = 'Cerrando…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/revoke-device', {
+      method: 'POST',
+      headers: { 'x-admin-password': adminPwd },
+    });
+    if (res.ok) {
+      document.getElementById('device-status').textContent = '⚪ Sin dispositivo activo';
+      document.getElementById('device-info').textContent = 'La sesión fue cerrada. El próximo celular que ingrese el PIN quedará activo.';
+      btn.style.display = 'none';
+    }
+  } catch { /* ignorar */ }
+  btn.textContent = 'Cerrar sesión del dispositivo';
+  btn.disabled = false;
 });
 
 document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });

@@ -185,6 +185,68 @@ async function endSession() {
   conversation = null;
 }
 
+// ── PIN / activación ──────────────────────────────────────────────
+function getOrCreateDeviceId() {
+  let id = localStorage.getItem('charlemos_device_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('charlemos_device_id', id);
+  }
+  return id;
+}
+
+async function tryActivate(pin) {
+  const deviceId = getOrCreateDeviceId();
+  const res = await fetch('/api/activate', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ pin, deviceId }),
+  });
+  return res;
+}
+
+function isActivated() {
+  return localStorage.getItem('charlemos_activated') === '1';
+}
+
+const pinInput = document.getElementById('pin-input');
+const pinError = document.getElementById('pin-error');
+const btnPin   = document.getElementById('btn-pin');
+
+async function handlePin() {
+  const pin = pinInput.value.trim();
+  if (!pin) return;
+  btnPin.disabled = true;
+  btnPin.textContent = 'Verificando…';
+  pinError.textContent = '';
+  try {
+    const res = await tryActivate(pin);
+    if (res.ok) {
+      localStorage.setItem('charlemos_activated', '1');
+      show('welcome');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      pinError.textContent = data.error || 'PIN incorrecto.';
+      pinInput.value = '';
+    }
+  } catch {
+    pinError.textContent = 'Error de conexión. Intenta de nuevo.';
+  } finally {
+    btnPin.disabled = false;
+    btnPin.textContent = 'Entrar';
+  }
+}
+
+btnPin.addEventListener('click', handlePin);
+pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') handlePin(); });
+
+// Al cargar: si ya está activado, saltar la pantalla de PIN
+if (isActivated()) {
+  getOrCreateDeviceId(); // asegura que el ID existe
+  show('welcome');
+}
+// ────────────────────────────────────────────────────────────────
+
 document.getElementById('btn-start').addEventListener('click', () => show('topics'));
 document.getElementById('btn-settings').addEventListener('click', openSettings);
 document.getElementById('btn-resume').addEventListener('click', () => {

@@ -31,8 +31,29 @@ async function runSearch(query) {
   }
 }
 
+async function validateDevice(req) {
+  const kvUrl = process.env.KV_REST_API_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN;
+  if (!kvUrl || !kvToken) return true; // sin Redis configurado, no bloquear
+  const deviceId = req.headers['x-device-id'];
+  if (!deviceId) return false;
+  try {
+    const r = await fetch(`${kvUrl}/get/charlemos:active_device`, {
+      headers: { Authorization: `Bearer ${kvToken}` },
+    });
+    const data = await r.json();
+    const current = data.result ? JSON.parse(data.result) : null;
+    return current && current.deviceId === deviceId;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+
+  const authorized = await validateDevice(req);
+  if (!authorized) return res.status(403).json({ error: 'Dispositivo no autorizado' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Falta ANTHROPIC_API_KEY' });
