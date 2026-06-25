@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (pin !== appPin) return res.status(401).json({ error: 'PIN incorrecto' });
 
   try {
-    const r = await fetch(`${kvUrl}/get/charlemos:active_device`, {
+    const r = await fetch(`${kvUrl}/get/charlemos_active_device`, {
       headers: { Authorization: `Bearer ${kvToken}` },
     });
     const data = await r.json();
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
     if (!current) {
       const record = { deviceId, registeredAt: new Date().toISOString() };
-      await fetch(`${kvUrl}/set/charlemos:active_device`, {
+      await fetch(`${kvUrl}/set/charlemos_active_device`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${kvToken}`, 'content-type': 'application/json' },
         body: JSON.stringify(record),

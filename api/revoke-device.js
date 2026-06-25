@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (authHeader !== adminPassword) return res.status(401).json({ error: 'No autorizado' });
 
   try {
-    await fetch(`${kvUrl}/del/charlemos:active_device`, {
+    await fetch(`${kvUrl}/del/charlemos_active_device`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${kvToken}` },
     });
