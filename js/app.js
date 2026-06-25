@@ -1,5 +1,5 @@
 import { TOPICS } from './prompts.js';
-import { getConfig, saveConfig, VOICES, LEVELS } from './config.js';
+import { getConfig, saveConfig, VOICES, LEVELS, VERSION } from './config.js';
 import { createConversation } from './conversation.js';
 import { createRecognizer } from './speech.js';
 import { speak, stopSpeaking } from './tts.js';
@@ -374,6 +374,37 @@ document.getElementById('btn-back-settings').addEventListener('click', () => sho
 refreshWelcome();
 show('welcome');
 
+// Mostrar versión
+document.getElementById('version-label').textContent = `v${VERSION}`;
+
+// Service worker: registro + detección de actualizaciones
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('service-worker.js');
+
+      const showUpdateBanner = () => {
+        document.getElementById('update-banner').style.display = 'flex';
+      };
+
+      if (reg.waiting) showUpdateBanner();
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+
+      document.getElementById('btn-update').addEventListener('click', () => {
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      });
+
+    } catch { /* ignorar */ }
+  });
 }

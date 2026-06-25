@@ -1,3 +1,5 @@
+export const VERSION = '1.3.0';
+
 export const VOICES = [
   { id: 'Hjc6Kb2NmSRgzb1QwUsQ', label: 'Rodrigo (colombiano)' },
 ];

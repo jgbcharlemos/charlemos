@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <div id="update-banner" style="display:none;" class="update-banner">
+    <span>Hay una versión nueva disponible</span>
+    <button id="btn-update">Actualizar ahora</button>
+  </div>
+
   <main id="app">
 
     <!-- Pantalla 0: PIN de acceso -->
@@ -41,6 +46,7 @@
         <button class="btn" id="btn-start">¿De qué quieres hablar hoy?</button>
         <button class="btn btn--outline" id="btn-resume" style="display:none;">Retomar la charla anterior</button>
         <button class="btn btn--ghost" id="btn-settings">⚙️ Ajustes</button>
+        <span class="version-label" id="version-label"></span>
       </div>
     </section>
 

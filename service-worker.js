@@ -1,4 +1,4 @@
-const CACHE = 'charlemos-v1';
+const CACHE = 'charlemos-v1.3.0';
 const SHELL = [
   './',
   './index.html',
@@ -15,7 +15,12 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  // No skipWaiting aquí — esperamos confirmación del usuario
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
