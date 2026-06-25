@@ -15,8 +15,9 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
-  // No skipWaiting aquí — esperamos confirmación del usuario
+  // skipWaiting aquí solo para esta versión de transición.
+  // A partir de v1.4.0 en adelante, el banner se encarga.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('message', (e) => {
