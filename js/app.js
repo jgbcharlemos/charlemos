@@ -240,10 +240,12 @@ async function handlePin() {
 btnPin.addEventListener('click', handlePin);
 pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') handlePin(); });
 
-// Al cargar: si ya está activado, saltar la pantalla de PIN
+// Al cargar: decidir qué pantalla mostrar
 if (isActivated()) {
-  getOrCreateDeviceId(); // asegura que el ID existe
+  getOrCreateDeviceId();
   show('welcome');
+} else {
+  show('pin');
 }
 // ────────────────────────────────────────────────────────────────
 
