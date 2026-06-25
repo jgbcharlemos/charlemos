@@ -417,7 +417,6 @@ document.getElementById('btn-save-settings').addEventListener('click', () => {
 document.getElementById('btn-back-settings').addEventListener('click', () => show('welcome'));
 
 refreshWelcome();
-show('welcome');
 
 // Mostrar versión
 document.getElementById('version-label').textContent = `v${VERSION}`;
