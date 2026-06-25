@@ -110,6 +110,7 @@ export default async function handler(req, res) {
       const toolUse = data.content.find(b => b.type === 'tool_use');
       if (toolUse && toolUse.name === 'web_search') {
         const searchResults = await runSearch(toolUse.input.query);
+        console.log('Búsqueda:', toolUse.input.query, '→', searchResults.slice(0, 200));
 
         const messagesWithTool = [
           ...recent,
@@ -149,8 +150,14 @@ export default async function handler(req, res) {
         }
 
         const data2 = await res2.json();
-        const textBlock2 = data2.content.find(b => b.type === 'text');
-        const reply2 = textBlock2 ? textBlock2.text.trim() : '';
+        const textBlock2 = (data2.content || []).find(b => b.type === 'text');
+        let reply2 = textBlock2 ? textBlock2.text.trim() : '';
+        if (!reply2) {
+          console.error('2da llamada sin texto. stop_reason:', data2.stop_reason,
+            'content:', JSON.stringify(data2.content));
+          // Fallback: dar el dato directo desde los resultados de búsqueda
+          reply2 = `Mira, encontré esto: ${searchResults.split('\n')[0]}. ¿Y a usted qué le parece?`;
+        }
         return res.status(200).json({ reply: reply2 });
       }
     }
