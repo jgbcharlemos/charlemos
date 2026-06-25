@@ -80,7 +80,9 @@ export default async function handler(req, res) {
   try {
     const body = {
       model: 'claude-sonnet-4-6',
-      max_tokens: maxTokens,
+      // Damos espacio suficiente para que Claude pueda generar una búsqueda si la necesita;
+      // la respuesta final al usuario se mantiene breve por instrucción del prompt.
+      max_tokens: hasBrave ? Math.max(maxTokens, 300) : maxTokens,
       system,
       messages: recent,
       ...(hasBrave ? { tools: [SEARCH_TOOL] } : {}),

@@ -1,4 +1,4 @@
-const CACHE = 'charlemos-v1.4.0';
+const CACHE = 'charlemos-v1.4.1';
 const SHELL = [
   './',
   './index.html',
