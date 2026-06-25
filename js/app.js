@@ -154,8 +154,14 @@ async function startChat(topicKey, resume = false) {
     try {
       const first = await conversation.start();
       await sayAI(first);
-    } catch {
-      aiText.textContent = 'Uy, no pude conectarme. Revisa el internet e inténtalo de nuevo.';
+    } catch (err) {
+      if (err.code === 403) {
+        localStorage.removeItem('charlemos_activated');
+        show('pin');
+        pinError.textContent = 'El acceso fue revocado. Ingresa el PIN de nuevo.';
+      } else {
+        aiText.textContent = 'Uy, no pude conectarme. Revisa el internet e inténtalo de nuevo.';
+      }
     }
   }
 
@@ -289,24 +295,24 @@ document.getElementById('btn-pause').addEventListener('click', async () => {
   show('welcome');
 });
 
-document.getElementById('btn-change-topic').addEventListener('click', async () => {
+document.getElementById('btn-change-topic').addEventListener('click', () => {
   autoListen = false;
   stopSpeaking();
-  await endSession();
   show('topics');
   refreshWelcome();
+  endSession(); // en segundo plano
 });
 
 document.getElementById('btn-keep-talking').addEventListener('click', () => show('chat'));
-document.getElementById('btn-change-topic-completion').addEventListener('click', async () => {
-  await endSession();
+document.getElementById('btn-change-topic-completion').addEventListener('click', () => {
   show('topics');
   refreshWelcome();
+  endSession();
 });
-document.getElementById('btn-bye').addEventListener('click', async () => {
-  await endSession();
+document.getElementById('btn-bye').addEventListener('click', () => {
   refreshWelcome();
   show('welcome');
+  endSession();
 });
 
 let autoListen = false; // micrófono continuo activo

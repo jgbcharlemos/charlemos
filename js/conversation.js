@@ -14,6 +14,11 @@ export function createConversation(name, topic, level, initialMessages = []) {
       },
       body: JSON.stringify({ messages, name, topic, level }),
     });
+    if (res.status === 403) {
+      const err = new Error('DEVICE_NOT_AUTHORIZED');
+      err.code = 403;
+      throw err;
+    }
     if (!res.ok) throw new Error('No se pudo obtener respuesta');
     const data = await res.json();
     const reply = (data.reply || '').trim();
