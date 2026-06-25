@@ -272,6 +272,7 @@ document.getElementById('btn-surprise').addEventListener('click', () => {
 document.getElementById('btn-back-welcome').addEventListener('click', () => show('welcome'));
 
 document.getElementById('btn-pause').addEventListener('click', async () => {
+  autoListen = false;
   if (!conversation || !timer) return;
   const elapsed = timer.pause();
   savePausedSession({
@@ -289,6 +290,7 @@ document.getElementById('btn-pause').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-change-topic').addEventListener('click', async () => {
+  autoListen = false;
   stopSpeaking();
   await endSession();
   show('topics');
@@ -307,10 +309,38 @@ document.getElementById('btn-bye').addEventListener('click', async () => {
   show('welcome');
 });
 
+let autoListen = false; // micrófono continuo activo
+
+function ensureRecognizer() {
+  if (recognizer) return;
+  recognizer = createRecognizer({
+    onResult: handleUserSpeech,
+    onNoSpeech: () => {
+      stopListeningUI();
+      handleUserSpeech('[NO_ENTENDÍ]');
+    },
+    onError: () => {
+      setStatus('');
+      stopListeningUI();
+      if (autoListen && !busy) setTimeout(startListening, 800);
+    },
+    onEnd: () => {
+      stopListeningUI();
+    },
+  });
+}
+
+function startListening() {
+  ensureRecognizer();
+  if (!recognizer.supported) { setStatus('Usa Chrome para hablar.'); return; }
+  if (busy) return;
+  startListeningUI();
+  recognizer.start();
+}
+
 function handleUserSpeech(text) {
   if (!text) return;
   const trimmed = text.trim();
-  // Si el reconocimiento capturó algo demasiado corto o ininteligible, señalárselo a Claude
   const isUnclear = trimmed.length < 2;
   const msgToSend = isUnclear ? '[NO_ENTENDÍ]' : trimmed;
   busy = true;
@@ -319,26 +349,32 @@ function handleUserSpeech(text) {
   conversation.send(msgToSend)
     .then(reply => sayAI(reply))
     .catch(() => { aiText.textContent = 'Perdón, no te escuché bien. ¿Me lo repites?'; })
-    .finally(() => { busy = false; micBtn.disabled = false; setStatus(''); });
+    .finally(() => {
+      busy = false;
+      micBtn.disabled = false;
+      setStatus('');
+      if (autoListen) setTimeout(startListening, 400);
+    });
 }
 
 micBtn.addEventListener('click', () => {
   if (busy) return;
-  if (!recognizer) {
-    recognizer = createRecognizer({
-      onResult: handleUserSpeech,
-      onNoSpeech: () => { stopListeningUI(); handleUserSpeech('[NO_ENTENDÍ]'); },
-      onError: () => { setStatus('No te escuché. Intenta otra vez.'); stopListeningUI(); },
-      onEnd: stopListeningUI,
-    });
+  ensureRecognizer();
+  if (!recognizer.supported) { setStatus('Usa Chrome para hablar.'); return; }
+  if (autoListen) {
+    // segundo toque: desactiva el modo continuo
+    autoListen = false;
+    stopListeningUI();
+    micLabel.textContent = 'Toca para hablar';
+    recognizer.stop();
+  } else {
+    autoListen = true;
+    startListening();
   }
-  if (!recognizer.supported) { setStatus('Este navegador no permite hablar. Usa Chrome.'); return; }
-  startListeningUI();
-  recognizer.start();
 });
 
 function startListeningUI() { micBtn.classList.add('mic--listening'); micLabel.textContent = 'Escuchando…'; setStatus(''); }
-function stopListeningUI() { micBtn.classList.remove('mic--listening'); micLabel.textContent = 'Toca para hablar'; }
+function stopListeningUI() { micBtn.classList.remove('mic--listening'); if (!autoListen) micLabel.textContent = 'Toca para hablar'; }
 
 function openSettings() {
   const cfg = getConfig();
