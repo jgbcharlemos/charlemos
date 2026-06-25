@@ -38,7 +38,7 @@ async function validateDevice(req) {
   const deviceId = req.headers['x-device-id'];
   if (!deviceId) return false;
   try {
-    const r = await fetch(`${kvUrl}/get/charlemos:active_device`, {
+    const r = await fetch(`${kvUrl}/get/charlemos_active_device`, {
       headers: { Authorization: `Bearer ${kvToken}` },
     });
     const data = await r.json();
