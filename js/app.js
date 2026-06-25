@@ -244,10 +244,14 @@ document.getElementById('btn-bye').addEventListener('click', async () => {
 
 function handleUserSpeech(text) {
   if (!text) return;
+  const trimmed = text.trim();
+  // Si el reconocimiento capturó algo demasiado corto o ininteligible, señalárselo a Claude
+  const isUnclear = trimmed.length < 2;
+  const msgToSend = isUnclear ? '[NO_ENTENDÍ]' : trimmed;
   busy = true;
   micBtn.disabled = true;
-  setStatus(`Dijiste: "${text}"`);
-  conversation.send(text)
+  if (!isUnclear) setStatus(`Dijiste: "${trimmed}"`);
+  conversation.send(msgToSend)
     .then(reply => sayAI(reply))
     .catch(() => { aiText.textContent = 'Perdón, no te escuché bien. ¿Me lo repites?'; })
     .finally(() => { busy = false; micBtn.disabled = false; setStatus(''); });
@@ -258,6 +262,7 @@ micBtn.addEventListener('click', () => {
   if (!recognizer) {
     recognizer = createRecognizer({
       onResult: handleUserSpeech,
+      onNoSpeech: () => { stopListeningUI(); handleUserSpeech('[NO_ENTENDÍ]'); },
       onError: () => { setStatus('No te escuché. Intenta otra vez.'); stopListeningUI(); },
       onEnd: stopListeningUI,
     });
