@@ -7,6 +7,7 @@ import { createTimer, getSessionSlot, loadDayProgress, saveDayProgress } from '.
 import { savePausedSession, loadPausedSession, clearPausedSession, submitReport } from './session.js';
 
 const screens = {
+  pin: document.getElementById('screen-pin'),
   welcome: document.getElementById('screen-welcome'),
   topics: document.getElementById('screen-topics'),
   chat: document.getElementById('screen-chat'),
